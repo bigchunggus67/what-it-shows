@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="../../../_app/immutable/entry/start.DZEU1TR_.js" rel="modulepreload">
+		<link href="../../../_app/immutable/chunks/-RnDNZ-W.js" rel="modulepreload">
+		<link href="../../../_app/immutable/chunks/W8JXJZ79.js" rel="modulepreload">
+		<link href="../../../_app/immutable/entry/app.CkeNYJWL.js" rel="modulepreload">
+		<link href="../../../_app/immutable/chunks/xihTtKlq.js" rel="modulepreload">
+		<link href="../../../_app/immutable/nodes/0.C4jpVwmq.js" rel="modulepreload">
+		<link href="../../../_app/immutable/nodes/5.C4zL7dPo.js" rel="modulepreload">
+		<link href="../../../_app/immutable/chunks/BY0sYyX-.js" rel="modulepreload">
+		<link href="../../../_app/immutable/chunks/DooIRhXB.js" rel="modulepreload">
+		<link href="../../../_app/immutable/chunks/CVBzP17p.js" rel="modulepreload">
+		<link href="../../../_app/immutable/chunks/CrgYNgkp.js" rel="modulepreload">
+		<!--e2jw2j--><!----><title>#4471 · three problems, not one · support kb</title>
+		<link href="../../../_app/immutable/assets/runbook.COyw0cbZ.css" rel="stylesheet">
+		<link href="../../../_app/immutable/assets/Callout.AbLv9dM_.css" rel="stylesheet">
+		<link href="../../../_app/immutable/assets/_page.DN_zhVh9.css" rel="stylesheet">
+  </head>
+  <body data-sveltekit-preload-data="hover">
+    <div style="display: contents"><!--[--><!--[0--><!--[--><!--[--><div class="kb svelte-e2jw2j"><header><a class="crumb svelte-e2jw2j" href="/kb">support desk · kb</a> <h1 class="svelte-e2jw2j">#4471 · three problems, not one</h1> <p class="meta svelte-e2jw2j"><span>owner <b>bigchunggus67</b></span> <span class="status open svelte-e2jw2j">open</span> <span class="svelte-e2jw2j">reviewed 2026-11-05 · 0 days ago</span></p></header> <!--[-1--><!--]--> <main><p><a href="/kb/incidents/4471">#4471</a> is marked known: one issue, one fix queued. The reports merged into it
+show three problems. Each has its own cause, its own fix and its own ticket. Fixing the parser
+leaves the other two open.</p> <aside class="warn svelte-17bri61"><!---->The parser fix does not close #4471. The booking-v3 form hint and the one-day move need fixes of
+their own.<!----></aside><!----> <h2>What #4471 holds</h2> <p class="sum svelte-1op6c6"><strong>412</strong> reports merged into #4471 · <strong>3</strong> problems · each report counted once <!--[-1--><!--]--></p> <table><thead><tr><th>problem</th><th>reports</th><th>intake tagged as</th><th>tenants</th><th>seen</th><th>ticket</th></tr></thead><tbody><!--[--><tr><td><code>parser</code><br/><span class="label svelte-1op6c6">shared parser reads day-first dates month first</span></td><td><strong>374</strong></td><td class="tags svelte-1op6c6">parser ×351 · hint ×23</td><td>11</td><td>2026-04-01 → 2026-10-04</td><td><!--[-1--><span class="bad svelte-1op6c6">no ticket yet</span><!--]--></td></tr><tr><td><code>hint</code><br/><span class="label svelte-1op6c6">booking-v3 form hint asks day-first tenants for MM/DD/YYYY</span></td><td><strong>33</strong></td><td class="tags svelte-1op6c6">hint ×18 · parser ×15</td><td>3</td><td>2026-04-17 → 2026-09-22</td><td><!--[-1--><span class="bad svelte-1op6c6">no ticket yet</span><!--]--></td></tr><tr><td><code>one-day-move</code><br/><span class="label svelte-1op6c6">dates move one day earlier</span></td><td><strong>5</strong></td><td class="tags svelte-1op6c6">parser ×5</td><td>5</td><td>2026-04-02 → 2026-10-04</td><td><!--[-1--><span class="bad svelte-1op6c6">no ticket yet</span><!--]--></td></tr><!--]--></tbody></table> <p class="note svelte-1op6c6">The export has 427 rows; 15 are the same report exported twice and count once.
+  Of the reports, intake's tag names the wrong problem on 43.</p><!----> <h2>The three problems</h2> <p><strong><code>parser</code>: the shared parser reads dates month first.</strong> Our tenants write the day first, so a
+booking for 7 April comes out as 4 July. Every channel shows it: app, email, and booking-v2’s
+form. This is the bug #4471 was opened for.</p> <p><strong><code>hint</code>: the booking-v3 form asks for the wrong order.</strong> Its date field prints <code>MM/DD/YYYY</code> under it. People at day-first tenants type what the hint says, month first, and the form reads
+the date their tenant’s way, day first. The result looks the same as the parser bug, a day and
+month swapped, but it only comes in through the booking-v3 form, and the parser fix does not
+touch it. The fix is the hint (or the form’s reading), not the parser.</p> <p><strong><code>one-day-move</code>: dates move one day earlier.</strong> These reports do not swap day and month. A
+Tuesday shows as the Monday before; an invite arrives before the booking was made; the same
+meeting lands on Tuesday for a client in Lisbon and Monday for one in Toronto. That points at
+time zone handling, not at date order. The desk had already noted these reports as a one-day
+move, but the cause table filed them under <code>parser</code> by tenant, so they had no ticket.</p> <h2>Why one ticket hid them</h2> <ul><li><strong>Merging on subject</strong> (<a href="/kb/decisions/0001-dedupe-by-subject">decision 0001</a>) puts every
+“wrong date” report in one ticket, whatever its cause. The subjects of all three problems
+match.</li> <li><strong>Intake’s tag is a guess from the reporter’s browser.</strong> A US browser at a European tenant
+gets tagged <code>hint</code>; a European browser on the booking-v3 form gets tagged <code>parser</code>. Counting
+tags gives the wrong split. The cause comes from the tenant: its locale, its booking form and
+the channel.</li> <li><strong>The export repeats reports.</strong> The ticket system’s pages overlap, so some reports appear
+twice. Count by report id.</li></ul> <h2>For the desk</h2> <ul><li>Keep #4471 for the parser. Link the other two tickets from it.</li> <li>Don’t close #4471 when the parser fix ships. Check that the booking-v3 and one-day reports have
+stopped too.</li> <li>Merging on subject alone will do this again. A decision record that replaces 0001 should merge
+on cause (tenant, form and channel), not subject.</li></ul> <!--[0--><p class="stamp svelte-1280m42">desk ref <b class="svelte-1280m42">DR-7GRZ-332R</b></p><!--]--><!----><!----></main> <footer class="svelte-e2jw2j">Pages are written by people. Tables and charts are built from data at render time.</footer></div><!--]--><!----><!--]--><!--]--> <!--[-1--><!--]--><!--]-->
+			
+			<script>
+				{
+					__sveltekit_c6stjp = {
+						base: new URL("../../..", location).pathname.slice(0, -1)
+					};
+
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("../../../_app/immutable/entry/start.DZEU1TR_.js"),
+						import("../../../_app/immutable/entry/app.CkeNYJWL.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 5],
+							data: [null,null],
+							form: null,
+							error: null
+						});
+					});
+				}
+			</script>
+		</div>
+  </body>
+</html>
