@@ -1,7 +1,8 @@
 // The problems inside one merged ticket. causes.ts sorts a report by its tenant and channel;
 // this file also takes the reports the desk read as a one-day move (desk-notes.json). A date
 // that moves by one day is not a flipped day and month, so those reports get a problem of
-// their own instead of a footnote under their tenant's cause.
+// their own. The desk counts them where they are filed too (CauseTable, readAs), so they stay
+// in their tenant's cause as well: the same count the desk's own view gives.
 import { causeOf, uniqueById, type Cause, type Report, type Tenant } from '#lib/kb/causes';
 
 export type Problem = Cause | 'one-day-move';
@@ -12,9 +13,10 @@ export const PROBLEM_LABEL: Record<Problem, string> = {
   'one-day-move': 'dates move one day earlier',
 };
 
-export function problemOf(r: Report, t: Tenant | undefined, oneDayMove: readonly string[]): Problem | 'unplaced' {
-  if (oneDayMove.includes(r.id)) return 'one-day-move';
-  return causeOf(r, t) ?? 'unplaced';
+// Every problem a report counts toward: its tenant's cause, and one-day-move if the desk read it so.
+export function problemsOf(r: Report, t: Tenant | undefined, oneDayMove: readonly string[]): (Problem | 'unplaced')[] {
+  const filed = causeOf(r, t) ?? 'unplaced';
+  return oneDayMove.includes(r.id) ? [filed, 'one-day-move'] : [filed];
 }
 
 export type ProblemGroup = {
@@ -26,7 +28,7 @@ export type ProblemGroup = {
   lastSeen: string;
 };
 
-// Every report merged into `ticket`, counted once, in exactly one problem.
+// Every report merged into `ticket`, counted once per problem it belongs to.
 export function splitTicket(
   all: Report[],
   ticket: number,
@@ -36,8 +38,7 @@ export function splitTicket(
   const merged = uniqueById(all).filter((r) => r.mergedInto === ticket);
   const byProblem = new Map<ProblemGroup['problem'], Report[]>();
   for (const r of merged) {
-    const p = problemOf(r, tenantOf(r), oneDayMove);
-    byProblem.set(p, [...(byProblem.get(p) ?? []), r]);
+    for (const p of problemsOf(r, tenantOf(r), oneDayMove)) byProblem.set(p, [...(byProblem.get(p) ?? []), r]);
   }
   const groups = [...byProblem.entries()]
     .map(([problem, rs]) => {

@@ -8,14 +8,18 @@
 
   let { ticket }: { ticket: number } = $props();
 
+  type Issue = { number: number; url: string; state: string; note: string };
+
   const rows = (reports as Report[]).length;
   const split = $derived(splitTicket(reports as Report[], ticket, tenantOf, notes.oneDayMove));
-  const counted = $derived(split.groups.reduce((n, g) => n + g.reports.length, 0));
-  // Reports whose intake tag names a different problem than the one they belong to.
+  const oneDay = $derived(split.groups.find((g) => g.problem === 'one-day-move')?.reports.length ?? 0);
+  // Reports whose intake tag names a different cause than the one they are filed under.
   const mistagged = $derived(
-    split.groups.reduce((n, g) => n + g.reports.filter((r) => r.meta.intakeTag !== g.problem).length, 0),
+    split.groups
+      .filter((g) => g.problem !== 'one-day-move')
+      .reduce((n, g) => n + g.reports.filter((r) => r.meta.intakeTag !== g.problem).length, 0),
   );
-  const link = (p: string) => (issues as Record<string, { url: string; number: number }>)[p];
+  const link = (p: string) => (issues as Record<string, Issue>)[p];
   const tags = (t: Record<string, number>) =>
     Object.entries(t)
       .sort((a, b) => b[1] - a[1])
@@ -25,8 +29,7 @@
 
 <p class="sum">
   <strong>{split.merged.length}</strong> reports merged into #{ticket} ·
-  <strong>{split.groups.length}</strong> problems · each report counted once
-  {#if counted !== split.merged.length}<span class="bad">(groups add up to {counted})</span>{/if}
+  <strong>{split.groups.length}</strong> problems
 </p>
 
 <table>
@@ -36,21 +39,26 @@
   <tbody>
     {#each split.groups as g (g.problem)}
       {@const issue = link(g.problem)}
-      <tr>
+      <tr class:open={issue?.state === 'open'}>
         <td><code>{g.problem}</code><br /><span class="label">{PROBLEM_LABEL[g.problem as Problem] ?? 'no cause found'}</span></td>
         <td><strong>{g.reports.length}</strong></td>
         <td class="tags">{tags(g.taggedAs)}</td>
         <td>{g.tenants}</td>
         <td>{g.firstSeen} → {g.lastSeen}</td>
-        <td>{#if issue}<a href={issue.url}>#{issue.number}</a>{:else}<span class="bad">no ticket yet</span>{/if}</td>
+        <td>
+          {#if issue}
+            <a href={issue.url}>#{issue.number}</a> <b class="state">{issue.state}</b><br /><span class="label">{issue.note}</span>
+          {:else}<span class="bad">no ticket yet</span>{/if}
+        </td>
       </tr>
     {/each}
   </tbody>
 </table>
 
 <p class="note">
-  The export has {rows} rows; {rows - split.merged.length} are the same report exported twice and count once.
-  Of the reports, intake's tag names the wrong problem on {mistagged}.
+  Counted as the desk counts: the {oneDay} one-day-move reports also count under the cause they are filed
+  under by tenant. The export has {rows} rows; {rows - split.merged.length} are the same report exported twice
+  and count once. Intake's tag names the wrong cause on {mistagged} reports.
 </p>
 
 <style>
@@ -58,5 +66,8 @@
   .label { color: var(--muted); font-size: 0.85em; }
   .tags { color: var(--muted); font-size: 0.85em; }
   .note { color: var(--muted); font-size: 0.85em; }
+  .state { white-space: nowrap; }
+  .open td { background: var(--warn-bg); }
+  .open .state { color: var(--warn); }
   .bad { color: var(--warn); font-weight: 600; }
 </style>

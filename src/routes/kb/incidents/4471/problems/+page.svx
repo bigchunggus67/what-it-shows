@@ -13,13 +13,16 @@ signature: bigchunggus67
   import Callout from '#lib/kb/Callout.svelte';
 </script>
 
-[#4471](/kb/incidents/4471) is marked known: one issue, one fix queued. The reports merged into it
-show three problems. Each has its own cause, its own fix and its own ticket. Fixing the parser
-leaves the other two open.
+[#4471](/kb/incidents/4471) was merged as one issue. The reports in it show three problems, each
+with its own cause, fix and ticket.
+
+Engineering closed #4471 on 5 October: the parser is fixed (`fix(dates): parse dd/mm for eu
+locales`), and the booking-v3 hint won't be fixed because the booking-v3 form is retired. That
+update does not cover the one-day move.
 
 <Callout kind="warn">
-The parser fix does not close #4471. The booking-v3 form hint and the one-day move need fixes of
-their own.
+#4471 is closed, but the one-day move is still open. Its reports are about time zones, not
+date order, so the parser fix does not reach them.
 </Callout>
 
 ## What #4471 holds
@@ -28,21 +31,22 @@ their own.
 
 ## The three problems
 
-**`parser`: the shared parser reads dates month first.** Our tenants write the day first, so a
-booking for 7 April comes out as 4 July. Every channel shows it: app, email, and booking-v2's
-form. This is the bug #4471 was opened for.
+**`parser`: the shared parser reads dates month first. Fixed.** Our tenants write the day
+first, so a booking for 7 April came out as 4 July. Every channel showed it: app, email, and
+booking-v2's form. This is the bug #4471 was opened for.
 
-**`hint`: the booking-v3 form asks for the wrong order.** Its date field prints `MM/DD/YYYY`
+**`hint`: the booking-v3 form asks for the wrong order. Won't fix: the form is retired.** Its date field prints `MM/DD/YYYY`
 under it. People at day-first tenants type what the hint says, month first, and the form reads
 the date their tenant's way, day first. The result looks the same as the parser bug, a day and
 month swapped, but it only comes in through the booking-v3 form, and the parser fix does not
-touch it. The fix is the hint (or the form's reading), not the parser.
+touch it. Retiring the form ends it.
 
-**`one-day-move`: dates move one day earlier.** These reports do not swap day and month. A
+**`one-day-move`: dates move one day earlier. Open.** These reports do not swap day and month. A
 Tuesday shows as the Monday before; an invite arrives before the booking was made; the same
 meeting lands on Tuesday for a client in Lisbon and Monday for one in Toronto. That points at
 time zone handling, not at date order. The desk had already noted these reports as a one-day
-move, but the cause table filed them under `parser` by tenant, so they had no ticket.
+move, but the cause table counts them under `parser` by tenant, so they had no ticket. The desk
+still counts them there, and so does the table above.
 
 ## Why one ticket hid them
 
@@ -58,9 +62,8 @@ move, but the cause table filed them under `parser` by tenant, so they had no ti
 
 ## For the desk
 
-- Keep #4471 for the parser. Link the other two tickets from it.
-- Don't close #4471 when the parser fix ships. Check that the booking-v3 and one-day reports have
-  stopped too.
+- Don't take #4471 being closed to mean every date report is solved. Check that the one-day
+  move reports stop before closing its ticket.
 - Merging on subject alone will do this again. A decision record that replaces 0001 should merge
   on cause (tenant, form and channel), not subject.
 

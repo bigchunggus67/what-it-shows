@@ -1,5 +1,20 @@
 {
-  "parser": { "number": 1, "url": "https://github.com/bigchunggus67/what-it-shows/issues/1" },
-  "hint": { "number": 2, "url": "https://github.com/bigchunggus67/what-it-shows/issues/2" },
-  "one-day-move": { "number": 3, "url": "https://github.com/bigchunggus67/what-it-shows/issues/3" }
+  "parser": {
+    "number": 1,
+    "url": "https://github.com/bigchunggus67/what-it-shows/issues/1",
+    "state": "fixed",
+    "note": "fix(dates): parse dd/mm for eu locales, #4471 closed 5 Oct"
+  },
+  "hint": {
+    "number": 2,
+    "url": "https://github.com/bigchunggus67/what-it-shows/issues/2",
+    "state": "won't fix",
+    "note": "booking-v3 form retired"
+  },
+  "one-day-move": {
+    "number": 3,
+    "url": "https://github.com/bigchunggus67/what-it-shows/issues/3",
+    "state": "open",
+    "note": "not in the 5 Oct engineering update"
+  }
 }
